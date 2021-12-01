@@ -51,6 +51,8 @@ restart.addEventListener("click", () => {
     button.disabled = false;
     text.textContent = `Player 1's turn`;
     activePlayer = 1;
+    moves1 = [];
+    moves2 = [];
   });
 });
 
@@ -65,17 +67,21 @@ const winningConditions = [
   ["tile1", "tile5", "tile9"],
   ["tile3", "tile5", "tile7"],
 ];
-//console.log(moves1);
-//console.log(moves2);
-//console.log(winningConditions[0]);
+console.log(moves1);
+console.log(moves2);
+console.log(winningConditions[0]);
 
 const gameEnd = function () {
   for (let i = 0; i < winningConditions.length; i++) {
-    if (winningConditions[i] === [...moves1]) {
+    if (winningConditions[i] === moves1) {
       text.textContent = `Congratulations! ${player1.name} won the game!`;
-    } else if (winningConditions[i] === [...moves2]) {
+      break;
+    } else if (winningConditions[i] === moves2) {
       text.textContent = `Congratulations! ${player2.name} won the game!`;
     }
   }
 };
-gameEnd();
+
+if (winningConditions) {
+  gameEnd();
+}

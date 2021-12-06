@@ -1,87 +1,93 @@
-const restart = document.querySelector(".restart");
-const buttons = document.querySelectorAll(".btn");
-const text = document.querySelector(".main-text");
+const X_CLASS = "x";
+const CIRCLE_CLASS = "circle";
+const WINNING_COMBINATIONS = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
+];
+const cellElements = document.querySelectorAll("[data-cell]");
+const board = document.getElementById("board");
+const winningMessageElement = document.getElementById("winningMessage");
+const restartButton = document.getElementById("restartButton");
+const winningMessageTextElement = document.querySelector(
+  "[data-winning-message-text]"
+);
+let circleTurn;
 
-const tile1 = document.getElementById("tile1").textContent;
-const tile2 = document.getElementById("tile2").textContent;
-const tile3 = document.getElementById("tile3").textContent;
-const tile4 = document.getElementById("tile4").textContent;
-const tile5 = document.getElementById("tile5").textContent;
-const tile6 = document.getElementById("tile6").textContent;
-const tile7 = document.getElementById("tile7").textContent;
-const tile8 = document.getElementById("tile8").textContent;
-const tile9 = document.getElementById("tile9").textContent;
+startGame();
 
-//Player Objects
-function Player(name, marker) {
-  this.name = name;
-  this.marker = marker;
+restartButton.addEventListener("click", startGame);
+
+function startGame() {
+  circleTurn = false;
+  cellElements.forEach((cell) => {
+    cell.classList.remove(X_CLASS);
+    cell.classList.remove(CIRCLE_CLASS);
+    cell.removeEventListener("click", handleClick);
+    cell.addEventListener("click", handleClick, { once: true });
+  });
+  setBoardHoverClass();
+  winningMessageElement.classList.remove("show");
 }
 
-//Creating Players
-const player1 = new Player("Player1", "X");
-const player2 = new Player("Player2", "O");
-activePlayer = 1;
-let moves1 = [];
-let moves2 = [];
-
-//Clicking Function
-buttons.forEach(function (button) {
-  button.addEventListener("click", () => {
-    if (activePlayer == 1) {
-      button.textContent = `${player1.marker}`;
-      button.disabled = true;
-      text.textContent = `${player2.name}'s Turn!`;
-      activePlayer = 2;
-      moves1.push(button.id);
-    } else if (activePlayer == 2) {
-      button.textContent = `${player2.marker}`;
-      button.disabled = true;
-      text.textContent = `${player1.name}'s Turn!`;
-      activePlayer = 1;
-      moves2.push(button.id);
-    }
-  });
-});
-
-//Restart the game
-restart.addEventListener("click", () => {
-  buttons.forEach(function (button) {
-    button.textContent = "";
-    button.disabled = false;
-    text.textContent = `Player 1's turn`;
-    activePlayer = 1;
-    moves1 = [];
-    moves2 = [];
-  });
-});
-
-//Winning Conditions
-const winningConditions = [
-  ["tile1", "tile2", "tile3"],
-  ["tile4", "tile5", "tile6"],
-  ["tile7", "tile8", "tile9"],
-  ["tile1", "tile4", "tile7"],
-  ["tile2", "tile5", "tile8"],
-  ["tile3", "tile6", "tile9"],
-  ["tile1", "tile5", "tile9"],
-  ["tile3", "tile5", "tile7"],
-];
-console.log(moves1);
-console.log(moves2);
-console.log(winningConditions[0]);
-
-const gameEnd = function () {
-  for (let i = 0; i < winningConditions.length; i++) {
-    if (winningConditions[i] === moves1) {
-      text.textContent = `Congratulations! ${player1.name} won the game!`;
-      break;
-    } else if (winningConditions[i] === moves2) {
-      text.textContent = `Congratulations! ${player2.name} won the game!`;
-    }
+function handleClick(e) {
+  const cell = e.target;
+  const currentClass = circleTurn ? CIRCLE_CLASS : X_CLASS;
+  placeMark(cell, currentClass);
+  if (checkWin(currentClass)) {
+    endGame(false);
+  } else if (isDraw()) {
+    endGame(true);
+  } else {
+    swapTurns();
+    setBoardHoverClass();
   }
-};
+}
 
-if (winningConditions) {
-  gameEnd();
+function endGame(draw) {
+  if (draw) {
+    winningMessageTextElement.innerText = "Draw!";
+  } else {
+    winningMessageTextElement.innerText = `${circleTurn ? "O's" : "X's"} Wins!`;
+  }
+  winningMessageElement.classList.add("show");
+}
+
+function isDraw() {
+  return [...cellElements].every((cell) => {
+    return (
+      cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS)
+    );
+  });
+}
+
+function placeMark(cell, currentClass) {
+  cell.classList.add(currentClass);
+}
+
+function swapTurns() {
+  circleTurn = !circleTurn;
+}
+
+function setBoardHoverClass() {
+  board.classList.remove(X_CLASS);
+  board.classList.remove(CIRCLE_CLASS);
+  if (circleTurn) {
+    board.classList.add(CIRCLE_CLASS);
+  } else {
+    board.classList.add(X_CLASS);
+  }
+}
+
+function checkWin(currentClass) {
+  return WINNING_COMBINATIONS.some((combination) => {
+    return combination.every((index) => {
+      return cellElements[index].classList.contains(currentClass);
+    });
+  });
 }
